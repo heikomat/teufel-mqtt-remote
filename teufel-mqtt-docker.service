@@ -1,0 +1,26 @@
+[Unit]
+Description=teufel-mqtt
+After=docker.service
+Wants=network-online.target docker.socket
+Requires=network-online.target docker.socket
+
+[Service]
+User=root
+Restart=always
+ExecStartPre=/bin/bash -c "/usr/bin/docker container inspect teufel-mqtt-remote 2> /dev/null || \
+             /usr/bin/docker run \
+               --name teufel-mqtt-remote \
+               --detach \
+               --restart always \
+               --tty \
+               --env MQTT_BROKER=localhost \
+               --env MQTT_PORT=8883 \
+               --env MQTT_USER= \
+               --env MQTT_PASSWORD= \
+               --env MQTT_TLS= \
+               heikomat/teufel-mqtt-remote"
+ExecStart=/usr/bin/docker start -a teufel-mqtt-remote
+ExecStop=/usr/bin/docker stop teufel-mqtt-remote
+
+[Install]
+WantedBy=multi-user.target
